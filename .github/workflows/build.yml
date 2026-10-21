@@ -1,0 +1,37 @@
+name: Build
+
+# Builds an ad-hoc signed AltTab.app on every PR and on demand, runs the unit tests, and uploads the app as a
+# downloadable artifact. Needs no secrets, unlike ci_cd.yml which signs, notarizes and releases.
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - run: sudo xcode-select -s /Applications/Xcode_26.0.1.app/Contents/Developer
+      - run: xcodebuild -version
+      # `local.xcconfig` is included last by debug/release.xcconfig, so it overrides the maintainer's Developer ID
+      # with an ad-hoc signature. `--timestamp` is dropped: ad-hoc signatures can't be timestamped.
+      - run: |
+          cat > config/local.xcconfig <<EOF
+          CODE_SIGN_IDENTITY = -
+          OTHER_CODE_SIGN_FLAGS = --deep --options runtime
+          CURRENT_PROJECT_VERSION = 0.0.0-${GITHUB_SHA::7}
+          APPCENTER_SECRET =
+          EOF
+      - run: |
+          set -o pipefail
+          xcodebuild build -project alt-tab-macos.xcodeproj -scheme Release -configuration Release \
+            -derivedDataPath DerivedData | scripts/xcbeautify
+      - run: |
+          set -o pipefail
+          xcodebuild test -project alt-tab-macos.xcodeproj -scheme Test -configuration Debug \
+            -derivedDataPath DerivedDataTests | scripts/xcbeautify
+      - run: ditto -c -k --keepParent DerivedData/Build/Products/Release/AltTab.app AltTab.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AltTab
+          path: AltTab.zip
