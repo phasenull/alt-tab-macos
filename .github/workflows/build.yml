@@ -1,16 +1,28 @@
 name: Build
 
-# Builds an ad-hoc signed AltTab.app on every PR and on demand, runs the unit tests, and uploads the app as a
-# downloadable artifact. Needs no secrets, unlike ci_cd.yml which signs, notarizes and releases.
+# Builds an ad-hoc signed AltTab.app and runs the unit tests. Needs no secrets, unlike ci_cd.yml.
+# Only merged code ships: pull requests are built and tested but produce no download; a push to master publishes the
+# app as a GitHub release. Actions are pinned to commit SHAs so a moved tag can't inject code into the build.
 on:
   pull_request:
-  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       - run: sudo xcode-select -s /Applications/Xcode_26.0.1.app/Contents/Developer
       - run: xcodebuild -version
       # `local.xcconfig` is included last by debug/release.xcconfig, so it overrides the maintainer's Developer ID
@@ -30,8 +42,29 @@ jobs:
           set -o pipefail
           xcodebuild test -project alt-tab-macos.xcodeproj -scheme Test -configuration Debug \
             -derivedDataPath DerivedDataTests | scripts/xcbeautify
-      - run: ditto -c -k --keepParent DerivedData/Build/Products/Release/AltTab.app AltTab.zip
-      - uses: actions/upload-artifact@v4
+      - if: github.event_name == 'push'
+        run: ditto -c -k --keepParent DerivedData/Build/Products/Release/AltTab.app AltTab.zip
+      - if: github.event_name == 'push'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: AltTab
           path: AltTab.zip
+
+  # Separate job so the write token never shares a runner with the build, which runs third-party build scripts
+  release:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: AltTab
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
+          sum=$(shasum -a 256 AltTab.zip | cut -d' ' -f1)
+          gh release create "$tag" AltTab.zip --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$tag" \
+            --notes "Built from master at ${GITHUB_SHA}. Ad-hoc signed. SHA-256 of AltTab.zip: \`${sum}\`"

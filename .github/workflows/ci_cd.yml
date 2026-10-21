@@ -1,7 +1,7 @@
+# Upstream's signed and notarized release pipeline. It needs the maintainer's secrets, which this fork doesn't have,
+# so it only runs on demand; build.yml builds and releases this fork.
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   APPCENTER_SECRET: ${{ secrets.APPCENTER_SECRET }}
