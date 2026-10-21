@@ -52,7 +52,6 @@
 "Bundle ID" = "Bundle ID";
 "Cancel" = "Annuleer";
 "Capture windows in the background" = "Vensters op de achtergrond vastleggen";
-"Check for updates now…" = "Nu op updates controleren…";
 "Check for updates periodically" = "Regelmatig op updates controleren";
 "Check for updates…" = "Op updates controleren…";
 "Check permissions…" = "Rechten controleren…";
@@ -217,7 +216,6 @@
 "Try it right now" = "Probeer het nu";
 "Unassign existing shortcut and continue" = "Bestaande sneltoets vrijmaken en doorgaan";
 "Update now" = "Nu bijwerken";
-"Updates policy" = "Updatebeleid";
 "Usage" = "Gebruik";
 "Version" = "Versie";
 "View existing discussions" = "Bekijk bestaande discussies";

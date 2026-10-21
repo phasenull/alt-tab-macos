@@ -52,7 +52,6 @@
 "Bundle ID" = "Bundle ID";
 "Cancel" = "İptal";
 "Capture windows in the background" = "Pencereleri arka planda yakala";
-"Check for updates now…" = "Şimdi güncellemeleri denetle…";
 "Check for updates periodically" = "Güncellemeleri düzenli olarak denetle";
 "Check for updates…" = "Güncellemeleri denetle…";
 "Check permissions…" = "İzinleri denetle…";
@@ -217,7 +216,6 @@
 "Try it right now" = "Hemen deneyin";
 "Unassign existing shortcut and continue" = "Mevcut kısayolun atamasını kaldır ve devam et";
 "Update now" = "Şimdi güncelle";
-"Updates policy" = "Güncelleme ilkesi";
 "Usage" = "Kullanım";
 "Version" = "Sürüm";
 "View existing discussions" = "Mevcut tartışmaları görüntüle";

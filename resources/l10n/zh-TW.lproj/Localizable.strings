@@ -52,7 +52,6 @@
 "Bundle ID" = "Bundle ID";
 "Cancel" = "取消";
 "Capture windows in the background" = "在背景擷取視窗";
-"Check for updates now…" = "立即檢查更新…";
 "Check for updates periodically" = "定期檢查更新";
 "Check for updates…" = "檢查更新…";
 "Check permissions…" = "檢查權限…";
@@ -217,7 +216,6 @@
 "Try it right now" = "立即試試看";
 "Unassign existing shortcut and continue" = "取消指派現有快速鍵並繼續";
 "Update now" = "立即更新";
-"Updates policy" = "更新政策";
 "Usage" = "使用情況";
 "Version" = "版本";
 "View existing discussions" = "查看現有討論";

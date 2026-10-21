@@ -52,7 +52,6 @@
 "Bundle ID" = "Bundle ID";
 "Cancel" = "Cancel";
 "Capture windows in the background" = "Capture windows in the background";
-"Check for updates now…" = "Check for updates now…";
 "Check for updates periodically" = "Check for updates periodically";
 "Check for updates…" = "Check for updates…";
 "Check permissions…" = "Check permissions…";
@@ -217,7 +216,6 @@
 "Try it right now" = "Try it right now";
 "Unassign existing shortcut and continue" = "Unassign existing shortcut and continue";
 "Update now" = "Update now";
-"Updates policy" = "Updates policy";
 "Usage" = "Usage";
 "Version" = "Version";
 "View existing discussions" = "View existing discussions";

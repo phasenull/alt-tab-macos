@@ -52,7 +52,6 @@
 "Bundle ID" = "Bundle ID";
 "Cancel" = "Avbryt";
 "Capture windows in the background" = "Fånga fönster i bakgrunden";
-"Check for updates now…" = "Sök efter uppdateringar nu…";
 "Check for updates periodically" = "Sök efter uppdateringar regelbundet";
 "Check for updates…" = "Sök efter uppdateringar…";
 "Check permissions…" = "Kontrollera behörigheter…";
@@ -217,7 +216,6 @@
 "Try it right now" = "Testa nu direkt";
 "Unassign existing shortcut and continue" = "Ta bort befintligt kortkommando och fortsätt";
 "Update now" = "Uppdatera nu";
-"Updates policy" = "Policy för uppdateringar";
 "Usage" = "Användning";
 "Version" = "Version";
 "View existing discussions" = "Visa befintliga diskussioner";

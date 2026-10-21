@@ -52,7 +52,6 @@
 "Bundle ID" = "Bundle ID";
 "Cancel" = "Abbrechen";
 "Capture windows in the background" = "Fenster im Hintergrund erfassen";
-"Check for updates now…" = "Jetzt nach Updates suchen…";
 "Check for updates periodically" = "Regelmäßig nach Updates suchen";
 "Check for updates…" = "Nach Updates suchen…";
 "Check permissions…" = "Berechtigungen prüfen…";
@@ -217,7 +216,6 @@
 "Try it right now" = "Probier es gleich aus";
 "Unassign existing shortcut and continue" = "Vorhandenes Tastenkürzel aufheben und fortfahren";
 "Update now" = "Jetzt aktualisieren";
-"Updates policy" = "Update-Richtlinie";
 "Usage" = "Nutzung";
 "Version" = "Version";
 "View existing discussions" = "Vorhandene Diskussionen anzeigen";
