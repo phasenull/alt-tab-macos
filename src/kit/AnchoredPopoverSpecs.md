@@ -13,15 +13,15 @@ usable, for at most `settleTimeout` (1s; macOS places a new item in 50 to 300ms)
 once when AltTab's setting hides the icon, show the same content without the arrow, centered under
 the menu bar of the main screen. One timer per request fires at the deadline, since an item that is
 never placed produces no layout event. Coalesce retries on the main queue; there is no polling
-after presentation or cancellation. A pending trial popover also counts as occupying the prompt
+after presentation or cancellation. A pending popover also counts as occupying the prompt
 slot, so Search education does not overlap it, and the deadline bounds how long it does.
 
 An item switched off in System Settings while AltTab runs keeps reporting a usable frame; the
 popover then points at where the icon was. That still shows the content, and the arrow tells the
 user an icon lives there.
 
-Replacing a request, closing the popover, purchasing Pro or summoning the switcher invalidates
-all previously queued presentation work. The trial announcement is consumed only by the
+Replacing a request, closing the popover or summoning the switcher invalidates
+all previously queued presentation work. An `onShown` callback is consumed only by the
 matching did-show notification, not by merely asking AppKit to display it.
 
 Explicit dismissal uses `close`, not `performClose`, which AppKit can refuse for child windows
