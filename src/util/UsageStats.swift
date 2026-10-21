@@ -1,10 +1,7 @@
 /// Usage counters, stored as a list of unix-second timestamps per key.
 ///
 /// The timestamps are the storage format, not an implementation detail: `count(_:since:)` slices them by a
-/// date window, and `UsageStatsTestable.proFeatureSessionCount` identifies a SESSION by its trigger timestamp
-/// and intersects the feature keys against it. Two features recorded in the same `recordTrigger` call share
-/// one timestamp by construction, which is what makes that intersect work — so nothing here may round,
-/// bucket or de-duplicate them.
+/// date window, so nothing here may round, bucket or de-duplicate them.
 ///
 /// The arrays live in memory and are written back on a debounce: reading the whole array out of `UserDefaults`
 /// (an `as? [Int]` conditional cast, per element) and writing it back on every summon showed up on a 51s
@@ -13,7 +10,9 @@ struct UsageStats {
     private static let defaults = UserDefaults(suiteName: "\(App.bundleIdentifier).usage")!
     private static let writeQueue = DispatchQueue(label: "UsageStats.writeQueue", qos: .utility)
     private static let maxAge: TimeInterval = 365 * 24 * 3600
-    private static let allKeys = ["triggers", "searches", "triggersAppIcons", "triggersTitles", "triggersAutoSize", "triggersExtraShortcuts"]
+    private static let allKeys = ["triggers", "searches"]
+    /// Per-feature counters that only fed upstream's Pro upsell copy. Removed from storage by `prune`.
+    private static let legacyKeys = ["triggersAppIcons", "triggersTitles", "triggersAutoSize", "triggersExtraShortcuts"]
     /// A summon burst (hold-to-cycle) records repeatedly; coalescing costs at most this much unflushed data
     /// if the app is killed rather than quit, which for usage counters is a better trade than one full array
     /// write per summon. `flushNow` covers the normal quit.
@@ -25,19 +24,13 @@ struct UsageStats {
     private static var dirty = Set<String>()
     private static var flushScheduled = false
     #if DEBUG
-    /// Set by `QaSurfaces`, so the counts the About window and the Pro prompts quote are the same on every run.
+    /// Set by `QaSurfaces`, so the counts the About window quotes are the same on every run.
     /// Read in place of what is stored; recording still goes to the real arrays.
     static var qaPinned: [String: [Int]]?
     #endif
 
-    static func recordTrigger(_ shortcutIndex: Int) {
-        let timestamp = Int(Date().timeIntervalSince1970)
-        record("triggers", at: timestamp)
-        if shortcutIndex > 0 && shortcutIndex < Preferences.maxShortcutCount { record("triggersExtraShortcuts", at: timestamp) }
-        let style = Preferences.effectiveAppearanceStyle(shortcutIndex)
-        if style == .appIcons { record("triggersAppIcons", at: timestamp) }
-        if style == .titles { record("triggersTitles", at: timestamp) }
-        if Preferences.effectiveAppearanceSize(shortcutIndex) == .auto { record("triggersAutoSize", at: timestamp) }
+    static func recordTrigger() {
+        record("triggers")
     }
 
     static func recordSearchIfFirst() {
@@ -67,25 +60,10 @@ struct UsageStats {
 
     static var triggerCount: Int { count("triggers", since: Date.distantPast) }
 
-    static var usedProFeaturesSessionCount: Int {
-        // One hop for all five keys: this runs on the main thread from the Pro windows and the About tab.
-        let keys = ["triggers", "triggersAppIcons", "triggersTitles", "triggersExtraShortcuts", "searches"]
-        let t = writeQueue.sync { keys.map { loadOnQueue($0) } }
-        return UsageStatsTestable.proFeatureSessionCount(
-            triggers: t[0], appIcons: t[1], titles: t[2], extraShortcuts: t[3], searches: t[4])
-    }
-
-    static func formatCount(_ n: Int) -> String { UsageStatsTestable.formatCount(n) }
-
-    static func usedProFeatureNames() -> [String] {
-        UsageStatsTestable.proFeatureNames().compactMap {
-            count($0.key, since: Date.distantPast) > 0 ? $0.name : nil
-        }
-    }
-
     static func prune() {
         let cutoff = Int(Date().timeIntervalSince1970 - maxAge)
         writeQueue.async {
+            legacyKeys.forEach { defaults.removeObject(forKey: $0) }
             for key in allKeys {
                 let timestamps = loadOnQueue(key)
                 guard !timestamps.isEmpty else { continue }

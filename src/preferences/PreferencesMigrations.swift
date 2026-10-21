@@ -4,6 +4,8 @@ class PreferencesMigrations {
     /// Injectable so tests can run migrations against an isolated `UserDefaults` suite.
     /// Production keeps `.standard`; behavior is unchanged.
     static var defaults = UserDefaults.standard
+    /// True when this launch found no `preferencesVersion`, i.e. AltTab has never run on this account.
+    private(set) static var isFreshInstall = false
 
     static func removeCorruptedPreferences() {
         // from v5.1.0+, there are crash reports of users somehow having their hold shortcuts set to ""
@@ -17,7 +19,8 @@ class PreferencesMigrations {
     static func migratePreferences() {
         let preferencesKey = "preferencesVersion"
         let existingVersion = Self.defaults.string(forKey: preferencesKey)
-        ProTransitionState.markFreshInstallIfUnknown(existingVersion == nil)
+        isFreshInstall = existingVersion == nil
+        restorePreferencesDowngradedByProTier()
         if let versionInPlist = existingVersion {
             if versionInPlist != "#VERSION#" && versionInPlist.compare(App.version, options: .numeric) != .orderedDescending {
                 updateToNewPreferences(versionInPlist)
@@ -61,6 +64,27 @@ class PreferencesMigrations {
                 migration()
             }
         }
+    }
+
+    /// Upstream's Pro tier downgraded Pro selections to free values when the trial ended, and stashed the
+    /// original index under `proTransition.remembered*` in the `<bundleId>.license` suite. Pro no longer
+    /// exists, so put those selections back and drop the suite.
+    static func restorePreferencesDowngradedByProTier() {
+        let suiteName = "\(App.bundleIdentifier).license"
+        guard let suite = UserDefaults(suiteName: suiteName) else { return }
+        for (rememberedKey, key) in [
+            ("rememberedAppearanceStyle", "appearanceStyle"),
+            ("rememberedAppearanceSize", "appearanceSize"),
+            ("rememberedShortcutStyle", "shortcutStyle"),
+            ("rememberedAppearanceStyleOverride", "appearanceStyleOverride"),
+            ("rememberedAppearanceSizeOverride", "appearanceSizeOverride"),
+            ("rememberedShortcutStyleOverride", "shortcutStyleOverride"),
+        ] {
+            if let index = suite.object(forKey: "proTransition.\(rememberedKey)") as? Int {
+                Self.defaults.set(String(index), forKey: key)
+            }
+        }
+        suite.removePersistentDomain(forName: suiteName)
     }
 
     static func shouldRun(_ versionInPlist: String, _ versionThreshold: String) -> Bool {
